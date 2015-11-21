@@ -1,0 +1,68 @@
+# http://www.codeskulptor.org/#user40_aN3PdeRzNq_16.py
+# implementation of card game - Memory
+
+import simplegui
+import random
+
+# helper function to initialize globals
+def new_game():
+    global exposed, list, state, turns
+    state = 0
+    turns = 0
+    numbers = range(1,9)
+    list = numbers * 2
+    random.shuffle(list)
+    exposed = [False for i in range(16)]
+    label.set_text("Turns = 0")
+     
+# define event handlers
+def mouseclick(pos):
+    # add game state logic here
+    global state, turns, click1, click2
+    click_pos = pos[0] // 50
+    if state == 0:
+        state = 1
+        exposed[click_pos] = True
+        click1 = click_pos
+    elif state == 1:
+        if exposed[click_pos] == False:
+            state = 2
+            turns += 1
+            click2 = click_pos
+            exposed[click_pos] = True
+            label.set_text("Turns = " + str(turns))
+    else:
+        if exposed[click_pos] == False:
+            state = 1
+            exposed[click_pos] = True
+            if list[click1] != list[click2]:
+                exposed[click1] = exposed[click2] = False
+                click1 = click_pos
+            else:
+                click1 = click_pos
+                
+# cards are logically 50x100 pixels in size    
+def draw(canvas):
+    global exposed, list
+    for i in range(0,16):
+        if exposed[i]:
+            canvas.draw_text(str(list[i]), [50*i+15,60], 30, "White")
+        else:
+            canvas.draw_polygon([(50*i, 0), (50*i+50, 0), (50*i + 50, 100), (50*i, 100)], 2, "White", "Green")
+
+
+# create frame and add a button and labels
+frame = simplegui.create_frame("Memory", 800, 100)
+frame.add_button("Reset", new_game)
+label = frame.add_label("Turns = 0")
+
+# register event handlers
+frame.set_mouseclick_handler(mouseclick)
+frame.set_draw_handler(draw)
+
+# get things rolling
+new_game()
+frame.start()
+
+
+# Always remember to review the grading rubric
